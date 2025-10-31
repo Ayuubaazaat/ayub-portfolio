@@ -153,7 +153,23 @@ const Navbar = () => {
           {status === 'loading' ? (
             <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
           ) : session ? (
-            <></>
+            <>
+              {/* Admin Dashboard Link - Only show if user is admin */}
+              {session.user?.email === (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '') && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: 0.7 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => router.push('/admin/gallery-approval')}
+                  className="px-3 py-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors duration-200 rounded-lg hover:bg-primary/10"
+                  title="Admin Dashboard"
+                >
+                  Admin
+                </motion.button>
+              )}
+            </>
           ) : (
             <>
               {socialIcons.map((social, index) => (

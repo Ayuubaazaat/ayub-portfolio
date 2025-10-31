@@ -1,4 +1,8 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import connectDB from '../../../lib/mongodb';
+import GalleryImage from '../../../models/GalleryImage';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 // Initialize S3 client (will be created per request to avoid issues)
 const getS3Client = () => {
@@ -23,6 +27,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Connect to MongoDB
+    await connectDB();
+
     // Check if environment variables are set
     if (!process.env.CLOUDFLARE_R2_ENDPOINT || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || !process.env.CLOUDFLARE_R2_BUCKET_NAME) {
       console.error('Missing R2 environment variables');
@@ -37,6 +44,9 @@ export default async function handler(req, res) {
     if (!image || !fileName) {
       return res.status(400).json({ error: 'Missing image or fileName' });
     }
+
+    // Get session to identify uploader
+    const session = await getServerSession(req, res, authOptions);
 
     const s3Client = getS3Client();
     if (!s3Client) {
@@ -66,7 +76,24 @@ export default async function handler(req, res) {
     // Return a URL that uses our proxy endpoint to serve the image
     const url = `/api/gallery/image?key=${encodeURIComponent(key)}`;
 
-    return res.status(200).json({ success: true, url, key });
+    // Save image metadata to MongoDB with 'pending' status
+    const newImage = await GalleryImage.create({
+      key: key,
+      url: url,
+      uploaderId: session?.user?.id || null,
+      uploaderEmail: session?.user?.email || null,
+      status: 'pending', // Default status is pending
+      contentType: contentType || 'image/jpeg',
+    });
+
+    return res.status(200).json({ 
+      success: true, 
+      url, 
+      key, 
+      id: newImage._id,
+      status: newImage.status,
+      message: 'Image uploaded successfully. Waiting for admin approval.'
+    });
   } catch (error) {
     console.error('Upload error:', error);
     console.error('Error details:', {

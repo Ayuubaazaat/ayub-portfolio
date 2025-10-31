@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import { Upload, Eye, X, ArrowUp } from 'lucide-react';
+import { toast, Toaster } from 'react-hot-toast';
 
 // Disable static generation for this dynamic page
 export function getServerSideProps() {
@@ -150,9 +151,12 @@ export default function GalleryPage() {
 
             const data = await response.json();
             if (data.success) {
+              // Show success message indicating approval is pending
+              toast.success(`"${file.name}" uploaded successfully! Waiting for admin approval.`);
               resolve(data.url);
             } else {
               console.error('Upload failed for', file.name);
+              toast.error(`Failed to upload "${file.name}": ${data.message || data.error}`);
               resolve(null);
             }
       } catch (error) {
@@ -168,29 +172,24 @@ export default function GalleryPage() {
     const uploadedUrls = (await Promise.all(uploadPromises)).filter(url => url !== null);
     
     if (uploadedUrls.length > 0) {
-      // Add uploaded URLs to the gallery
-      setGalleryImages((prev) => {
-        // Filter out duplicates
-        const existingUrls = new Set(prev);
-        const newUrls = uploadedUrls.filter(url => !existingUrls.has(url));
-        return [...newUrls, ...prev].slice(0, 60);
-      });
-      
-      // Reload images from R2 to ensure consistency
+      // Don't add to gallery immediately - images need approval first
+      // Just show success toast (already shown per image above)
+      // Reload images from API to get any newly approved images
       try {
         const response = await fetch('/api/gallery/list');
         const data = await response.json();
         if (data.success && data.images.length > 0) {
           const r2Urls = data.images.map(img => img.url);
           setGalleryImages([...defaultGallery, ...r2Urls]);
+        } else {
+          // If no approved images, just show default gallery
+          setGalleryImages(defaultGallery);
         }
       } catch (error) {
         console.error('Error reloading images:', error);
       }
-      
-      alert(`${uploadedUrls.length} image(s) uploaded successfully to Cloudflare R2!`);
     } else if (uploadedUrls.length === 0 && Array.from(files).length > 0) {
-      alert('No images were uploaded. Please check your connection and try again.');
+      toast.error('No images were uploaded. Please check file types and sizes.');
     }
     
     setUploading(false);
@@ -206,6 +205,8 @@ export default function GalleryPage() {
         <title>Creative Showcase - Personal Portfolio</title>
         <meta name="description" content="A premium gallery showcasing creative work and visual excellence" />
       </Head>
+      
+      <Toaster position="top-right" />
       
       <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 transition-colors">
         <Navbar />

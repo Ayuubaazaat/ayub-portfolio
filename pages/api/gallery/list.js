@@ -1,21 +1,5 @@
-import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
-
-// Initialize S3 client (will be created per request to avoid issues)
-const getS3Client = () => {
-  if (!process.env.CLOUDFLARE_R2_ENDPOINT || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
-    return null;
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
-    credentials: {
-      accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-      secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-    },
-    forcePathStyle: false, // R2 uses virtual-hosted-style URLs
-  });
-};
+import connectDB from '../../../lib/mongodb';
+import GalleryImage from '../../../models/GalleryImage';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -23,34 +7,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if environment variables are set
-    if (!process.env.CLOUDFLARE_R2_ENDPOINT || !process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || !process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || !process.env.CLOUDFLARE_R2_BUCKET_NAME) {
-      console.error('Missing R2 environment variables');
-      return res.status(500).json({ 
-        error: 'Server configuration error', 
-        message: 'R2 credentials not configured. Please check your .env.local file.' 
-      });
-    }
+    // Connect to MongoDB
+    await connectDB();
 
-    const s3Client = getS3Client();
-    if (!s3Client) {
-      return res.status(500).json({ 
-        error: 'Server configuration error', 
-        message: 'Failed to initialize S3 client' 
-      });
-    }
+    // Fetch only approved images from MongoDB
+    const approvedImages = await GalleryImage.find({ status: 'approved' })
+      .sort({ uploadTimestamp: -1 })
+      .lean();
 
-    const command = new ListObjectsV2Command({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-      Prefix: 'gallery/',
-    });
-
-    const response = await s3Client.send(command);
-    
-    const images = (response.Contents || []).map((object) => ({
-      key: object.Key,
-      url: `/api/gallery/image?key=${encodeURIComponent(object.Key)}`,
-      lastModified: object.LastModified,
+    const images = approvedImages.map((img) => ({
+      _id: img._id.toString(),
+      key: img.key,
+      url: img.url,
+      lastModified: img.uploadTimestamp || img.createdAt,
     }));
 
     return res.status(200).json({ success: true, images });

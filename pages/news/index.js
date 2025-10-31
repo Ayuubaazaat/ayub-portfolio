@@ -2,6 +2,11 @@ import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import News from '../../components/News';
 
+// Disable static generation for this dynamic page (Navbar uses router)
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function NewsPage() {
   return (
     <>

@@ -6,6 +6,11 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function Login() {
   const [formData, setFormData] = useState({
     email: '',

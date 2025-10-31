@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, Trash2, Eye, EyeOff, Lock } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');

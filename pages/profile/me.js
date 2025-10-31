@@ -4,6 +4,11 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function MyProfile() {
   const { data: session, status } = useSession();
   const router = useRouter();

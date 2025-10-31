@@ -6,6 +6,11 @@ import { Button } from '../../components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Heart, MessageCircle, Share2, ArrowLeft, X } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function NewsDetail() {
   const router = useRouter();
   const { id } = router.query;

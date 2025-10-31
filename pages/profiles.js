@@ -7,6 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import Navbar from '../components/Navbar';
 import { Users, UserPlus, MapPin, Globe } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function ProfilesPage() {
   const router = useRouter();
   const [profiles, setProfiles] = useState([]);

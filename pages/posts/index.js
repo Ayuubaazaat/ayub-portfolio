@@ -7,6 +7,11 @@ import NewsFeed from '../../components/NewsFeed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, TrendingUp, Users, Calendar, X, Send } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function PostsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();

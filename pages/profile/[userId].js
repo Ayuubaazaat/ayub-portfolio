@@ -19,6 +19,11 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { userId } = router.query;

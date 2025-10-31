@@ -4,6 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import { Upload, Eye, X, ArrowUp } from 'lucide-react';
 
+// Disable static generation for this dynamic page
+export function getServerSideProps() {
+  return { props: {} };
+}
+
 export default function GalleryPage() {
   // Default gallery images
   const defaultGallery = [

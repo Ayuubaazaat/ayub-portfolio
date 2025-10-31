@@ -5,6 +5,10 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
+  // Disable static optimization for error pages
+  generateBuildId: async () => {
+    return 'build-' + Date.now();
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

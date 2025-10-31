@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ayub-portfolio
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_URL
+        sync: false  # Set this manually in Render dashboard
+      - key: NEXTAUTH_SECRET
+        sync: false  # Set this manually in Render dashboard
+      - key: MONGODB_URI
+        sync: false  # Set this manually in Render dashboard
+      - key: CLOUDFLARE_R2_ACCESS_KEY_ID
+        sync: false  # Set this manually in Render dashboard
+      - key: CLOUDFLARE_R2_SECRET_ACCESS_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: CLOUDFLARE_R2_ENDPOINT
+        sync: false  # Set this manually in Render dashboard
+      - key: CLOUDFLARE_R2_BUCKET_NAME
+        sync: false  # Set this manually in Render dashboard
+
